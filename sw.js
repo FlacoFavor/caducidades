@@ -1,4 +1,4 @@
-const CACHE_NAME = 'caducidad-app-v1.5'; // Incrementa este número (v2, v3) para forzar actualizaciones
+const CACHE_NAME = 'caducidad-app-v1.1'; // Incrementa este número (v2, v3) para forzar actualizaciones
 const ASSETS = [
   'index.html',
   'app.js',
