@@ -167,18 +167,33 @@ function calcularTiempoAmigable(fechaInicio, fechaFin) {
     }
 }
 
-// Carga inicial
+// Solicitar permisos de notificación al usuario de forma activa
+function solicitarPermisoNotificaciones() {
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission().then(permiso => {
+            if (permiso === 'granted') {
+                console.log('Permiso de notificaciones concedido.');
+                verificarCaducidadesCriticas(); // Primera revisión tras aceptar
+            }
+        });
+    }
+}
+
 // Función para revisar caducidades pendientes
 function verificarCaducidadesCriticas() {
+    if (Notification.permission !== 'granted') return;
+
     const productos = obtenerProductos();
     const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0); // Arreglado: Normaliza las horas para que el cálculo de días sea exacto
     
     productos.forEach(p => {
         const fechaProd = new Date(p.fecha);
+        fechaProd.setHours(0, 0, 0, 0); // Arreglado: Normaliza también la fecha del producto
+        
         const diffTiempo = fechaProd - hoy;
         const diffDias = Math.ceil(diffTiempo / (1000 * 60 * 60 * 24));
 
-        // Si el producto vence hoy o ya venció
         if (diffDias === 0) {
             enviarAlertaVencimiento(`⚠️ ¡Atención!`, `El producto "${p.nombre}" caduca HOY.`);
         } else if (diffDias > 0 && diffDias <= 3) {
@@ -190,12 +205,16 @@ function verificarCaducidadesCriticas() {
 // Función genérica para lanzar las alertas del sistema
 function enviarAlertaVencimiento(titulo, mensaje) {
     if (Notification.permission === 'granted') {
+        // Arreglado: Espera de forma segura a que el Service Worker esté disponible
         navigator.serviceWorker.ready.then(registration => {
             registration.showNotification(titulo, {
                 body: mensaje,
-                icon: 'https://flaticon.com',
-                tag: titulo + mensaje // Evita que se duplique la misma notificación
+                icon: 'https://cdn-icons-png.flaticon.com/512/1570/1570770.png', // Arreglado: URL de icono válida
+                tag: titulo + p.nombre // Tag único por producto para evitar spam
             });
+        }).catch(() => {
+            // Alternativa si el SW falla temporalmente durante la carga inicial
+            new Notification(titulo, { body: mensaje });
         });
     }
 }
@@ -203,7 +222,14 @@ function enviarAlertaVencimiento(titulo, mensaje) {
 // Carga inicial mejorada
 document.addEventListener('DOMContentLoaded', () => {
     render();
-    // Ejecuta la revisión automática al abrir la PWA
-    verificarCaducidadesCriticas(); 
+    solicitarPermisoNotificaciones(); // Lanza la petición de permisos si no existe
+    
+    // Ejecuta la revisión automática cuando el Service Worker responda
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then(() => {
+            verificarCaducidadesCriticas(); 
+        });
+    } else {
+        verificarCaducidadesCriticas();
+    }
 });
-
