@@ -60,8 +60,6 @@ function enviarNotificacionLocal(nombre, fecha) {
     }
 }
 
-// ... (El resto de las funciones guardarProducto, obtenerProductos, eliminarProducto y render se quedan igual)
-
 function guardarProducto(prod) {
     const productos = obtenerProductos();
     productos.push(prod);
@@ -169,15 +167,34 @@ function calcularTiempoAmigable(fechaInicio, fechaFin) {
 
 // Solicitar permisos de notificación al usuario de forma activa
 function solicitarPermisoNotificaciones() {
-    if ('Notification' in window && Notification.permission === 'default') {
+    const btnPermiso = document.getElementById('btn-permiso');
+    if (!btnPermiso) return;
+
+    // Si ya está aceptado o denegado permanentemente, ocultamos el botón
+    if (Notification.permission !== 'default') {
+        btnPermiso.style.display = 'none';
+        if (Notification.permission === 'granted') {
+            verificarCaducidadesCriticas();
+        }
+        return;
+    }
+
+    // Si está en 'default' (ignorado u omitido), mostramos nuestro botón
+    btnPermiso.style.display = 'block';
+
+    btnPermiso.onclick = () => {
         Notification.requestPermission().then(permiso => {
             if (permiso === 'granted') {
-                console.log('Permiso de notificaciones concedido.');
-                verificarCaducidadesCriticas(); // Primera revisión tras aceptar
+                btnPermiso.style.display = 'none';
+                verificarCaducidadesCriticas();
+            } else if (permiso === 'denied') {
+                btnPermiso.style.display = 'none';
+                alert('Bloqueaste las notificaciones. Si cambias de opinión, actívalas desde el candado de la URL.');
             }
         });
-    }
+    };
 }
+
 
 // Función para revisar caducidades pendientes
 function verificarCaducidadesCriticas() {
