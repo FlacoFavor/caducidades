@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Caducidad</title>
+	<link rel="stylesheet" href="estilos.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#317EFB">
+</head>
+<body>
+    <main>
+        <h2>🗓️ Control de Caducidades</h2>
+        <form id="form-producto">
+            <input type="text" id="nombre" placeholder="Nombre del producto" required>
+            <input type="date" id="fecha" required>
+            <button type="submit">Añadir Producto</button>
+        </form>
+        
+        <h3>Lista de Productos</h3>
+        <ul id="lista-productos"></ul>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

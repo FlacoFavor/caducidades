@@ -1,0 +1,17 @@
+{
+  "name": "Gestor de Caducidad de Productos",
+  "short_name": "Caducidades",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#317EFB",
+  "description": "Controla las fechas de vencimiento de tus productos sin conexión.",
+  "icons": [
+    {
+      "src": "https://flaticon.com",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
