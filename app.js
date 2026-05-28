@@ -174,7 +174,7 @@ function solicitarPermisoNotificaciones() {
     if (Notification.permission !== 'default') {
         btnPermiso.style.display = 'none';
         if (Notification.permission === 'granted') {
-            verificarCaducidadesCriticas();
+            ejecutarVerificacionUnica();
         }
         return;
     }
@@ -186,7 +186,7 @@ function solicitarPermisoNotificaciones() {
         Notification.requestPermission().then(permiso => {
             if (permiso === 'granted') {
                 btnPermiso.style.display = 'none';
-                verificarCaducidadesCriticas();
+                ejecutarVerificacionUnica();
             } else if (permiso === 'denied') {
                 btnPermiso.style.display = 'none';
                 alert('Bloqueaste las notificaciones. Si cambias de opinión, actívalas desde el candado de la URL.');
@@ -195,6 +195,14 @@ function solicitarPermisoNotificaciones() {
     };
 }
 
+// Variable cerrojo para evitar que llamadas simultáneas dupliquen procesos
+let revisionEjecutada = false;
+
+function ejecutarVerificacionUnica() {
+    if (revisionEjecutada) return;
+    revisionEjecutada = true;
+    verificarCaducidadesCriticas();
+}
 
 // Función para revisar caducidades pendientes
 function verificarCaducidadesCriticas() {
@@ -202,51 +210,49 @@ function verificarCaducidadesCriticas() {
 
     const productos = obtenerProductos();
     const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0); // Arreglado: Normaliza las horas para que el cálculo de días sea exacto
+    hoy.setHours(0, 0, 0, 0); 
     
     productos.forEach(p => {
         const fechaProd = new Date(p.fecha);
-        fechaProd.setHours(0, 0, 0, 0); // Arreglado: Normaliza también la fecha del producto
+        fechaProd.setHours(0, 0, 0, 0); 
         
         const diffTiempo = fechaProd - hoy;
         const diffDias = Math.ceil(diffTiempo / (1000 * 60 * 60 * 24));
 
         if (diffDias === 0) {
-            enviarAlertaVencimiento(`⚠️ ¡Atención!`, `El producto "${p.nombre}" caduca HOY.`);
+            enviarAlertaVencimiento(`⚠️ ¡Atención!`, `El producto "${p.nombre}" caduca HOY.`, p.id);
         } else if (diffDias > 0 && diffDias <= 3) {
-            enviarAlertaVencimiento(`⏳ Próximo a vencer`, `A "${p.nombre}" le quedan solo ${diffDias} días.`);
+            enviarAlertaVencimiento(`⏳ Próximo a vencer`, `A "${p.nombre}" le quedan solo ${diffDias} días.`, p.id);
         }
     });
 }
 
-// Función genérica para lanzar las alertas del sistema
-function enviarAlertaVencimiento(titulo, mensaje) {
+// Función genérica para lanzar las alertas usando el ID como TAG único anti-duplicados
+function enviarAlertaVencimiento(titulo, mensaje, idProducto) {
     if (Notification.permission === 'granted') {
-        // Arreglado: Espera de forma segura a que el Service Worker esté disponible
         navigator.serviceWorker.ready.then(registration => {
             registration.showNotification(titulo, {
                 body: mensaje,
-                icon: 'https://cdn-icons-png.flaticon.com/512/1570/1570770.png', // Arreglado: URL de icono válida
-                tag: titulo + p.nombre // Tag único por producto para evitar spam
+                icon: 'https://cdn-icons-png.flaticon.com/512/1570/1570770.png',
+                tag: `vencimiento-${idProducto}` 
             });
         }).catch(() => {
-            // Alternativa si el SW falla temporalmente durante la carga inicial
             new Notification(titulo, { body: mensaje });
         });
     }
 }
 
-// Carga inicial mejorada
+// Carga inicial unificada sin hilos duplicados
 document.addEventListener('DOMContentLoaded', () => {
     render();
-    solicitarPermisoNotificaciones(); // Lanza la petición de permisos si no existe
+    solicitarPermisoNotificaciones();
     
-    // Ejecuta la revisión automática cuando el Service Worker responda
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.ready.then(() => {
-            verificarCaducidadesCriticas(); 
+            ejecutarVerificacionUnica(); 
         });
     } else {
-        verificarCaducidadesCriticas();
+        ejecutarVerificacionUnica();
     }
 });
+
