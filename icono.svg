@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <!-- Fondo redondeado con el color de tu tema -->
+  <rect width="512" height="512" rx="110" fill="#317EFB"/>
+  
+  <!-- Calendario Base -->
+  <rect x="106" y="140" width="300" height="280" rx="25" fill="#ffffff"/>
+  <path d="M106 165 c0-15 10-25 25-25 h250 c15 0 25 10 25 25 v55 H106 Z" fill="#dc3545"/>
+  
+  <!-- Anillas del calendario -->
+  <rect x="160" y="90" width="24" height="70" rx="12" fill="#adb5bd"/>
+  <rect x="328" y="90" width="24" height="70" rx="12" fill="#adb5bd"/>
+  
+  <!-- Reloj de Alerta / Tiempo -->
+  <circle cx="330" cy="330" r="85" fill="#f9ad0b" stroke="#ffffff" stroke-width="12"/>
+  <circle cx="330" cy="330" r="70" fill="#fff3cd"/>
+  <!-- Agujas del reloj -->
+  <path d="M330 285 v45 h35" stroke="#f9ad0b" stroke-width="10" stroke-linecap="round" fill="none"/>
+  
+  <!-- Líneas de texto simuladas en el calendario -->
+  <rect x="146" y="260" width="90" height="16" rx="8" fill="#6c757d"/>
+  <rect x="146" y="300" width="70" height="16" rx="8" fill="#6c757d"/>
+  <rect x="146" y="340" width="110" height="16" rx="8" fill="#a0aec0"/>
+</svg>

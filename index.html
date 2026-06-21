@@ -13,13 +13,25 @@
 		<button id="btn-permiso" style="display: none; background: #ff9800; color: white; border: none; padding: 10px; cursor: pointer; width: 100%;">
 		    🔔 Activar Notificaciones de Vencimiento
 		</button>
-        <h2>🗓️ Control de Caducidades</h2>
-        <form id="form-producto">
-            <input type="text" id="nombre" placeholder="Nombre del producto" required>
-            <input type="date" id="fecha" required>
-            <button type="submit">Añadir Producto</button>
-        </form>
+		<h2 class="titulo-app">
+			<img src="icono.svg" alt="Logo Control de Caducidad" class="logo-svg">
+			<span>Control de Caducidades</span>
+		</h2>
+        <!-- Reemplaza tu bloque <form> por este -->
+		<form id="form-producto">
+			<!-- Botón principal que siempre estará visible -->
+			<button type="button" id="btn-desplegar" class="btn-toggle">➕ Añadir Producto</button>
+			
+			<!-- Contenedor con los campos que se ocultarán/mostrarán -->
+			<div id="campos-producto" class="form-campos oculto">
+				<input type="text" id="nombre" placeholder="Nombre del producto" required>
+				<input type="date" id="fecha" required>
+				<button type="submit" class="btn-guardar">💾 Guardar en Lista</button>
+			</div>
+		</form>
         
+		<input type="text" id="buscar-producto" placeholder="🔍 Buscar producto en la lista...">
+		
         <h3>Lista de Productos</h3>
         <ul id="lista-productos"></ul>
     </main>

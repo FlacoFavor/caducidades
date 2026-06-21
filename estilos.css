@@ -87,3 +87,60 @@ p {
     top: .5rem; 
     right: .5rem; 
 }
+/* Alineación moderna con Flexbox para el título y el logo */
+.titulo-app {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;           /* Espacio exacto entre el icono y el texto */
+    margin-top: 15px;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    color: #317EFB;      /* Combinado con el color de tu tema */
+}
+
+/* Control estricto del tamaño del SVG en la interfaz */
+.logo-svg {
+    width: 42px;
+    height: 42px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Estilos para el botón interruptor */
+.btn-toggle {
+    background: #317EFB; /* Color azul a juego con el tema */
+    margin-bottom: 0;
+}
+.btn-toggle.activo {
+    background: #6c757d; /* Cambia a gris cuando está abierto para indicar "Cerrar" */
+}
+
+/* Contenedor de campos con animación de transición */
+.form-campos {
+    max-height: 300px; /* Altura máxima estimada para los campos */
+    opacity: 1;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, opacity 0.2s ease-out, padding 0.3s ease-out;
+    padding-top: 10px;
+}
+
+/* Clase que esconde los campos reduciendo su altura y opacidad a cero */
+.form-campos.oculto {
+    max-height: 0;
+    opacity: 0;
+    padding-top: 0;
+    pointer-events: none; /* Evita que se pueda interactuar estando oculto */
+}
+
+/* Estilo opcional para el botón de guardado interno */
+.btn-guardar {
+    background: #28a745;
+}
+
+#buscar-producto {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    border: 1px solid #317EFB; /* Borde azul sutil a juego con el tema */
+    background-color: #fff;
+}

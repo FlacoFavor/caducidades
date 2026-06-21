@@ -20,6 +20,37 @@ if ('serviceWorker' in navigator) {
     .catch(err => console.error('Error al registrar el Service Worker:', err));
 }
 
+const btnDesplegar = document.getElementById('btn-desplegar');
+const camposProducto = document.getElementById('campos-producto');
+
+btnDesplegar.addEventListener('click', () => {
+    const estaOculto = camposProducto.classList.toggle('oculto');
+    
+    if (estaOculto) {
+        //btnDesplegar.textContent = '➕ Añadir Producto';
+        btnDesplegar.classList.remove('activo');
+    } else {
+       // btnDesplegar.textContent = '❌ Cancelar';
+        btnDesplegar.classList.add('activo');
+        document.getElementById('nombre').focus(); // Coloca el cursor directamente en el input
+    }
+	actualizarContadorBoton();
+});
+
+function actualizarContadorBoton() {
+    const totalProductos = obtenerProductos().length;
+    
+    // Si el panel está oculto, muestra el texto normal con el contador
+    if (camposProducto.classList.contains('oculto')) {
+        btnDesplegar.textContent = totalProductos > 0 
+            ? `➕ Añadir Producto (${totalProductos} registrados)` 
+            : '➕ Añadir Producto';
+    } else {
+        // Si el panel está abierto, mantiene el texto de cancelar
+        btnDesplegar.textContent = '❌ Cancelar';
+    }
+}
+
 
 const form = document.getElementById('form-producto');
 const lista = document.getElementById('lista-productos');
@@ -32,10 +63,19 @@ form.addEventListener('submit', (e) => {
     const producto = { id: Date.now(), nombre, fecha };
     guardarProducto(producto);
     form.reset();
+	
+	// Limpiar la barra de búsqueda al añadir un producto
+    const inputBuscar = document.getElementById('buscar-producto');
+    if (inputBuscar) inputBuscar.value = '';
+	
     render();
-
-    // Disparar una notificación de confirmación/alerta inmediata
     enviarNotificacionLocal(nombre, fecha);
+
+    // ✨ NUEVO: Esconde los campos automáticamente tras guardar
+    camposProducto.classList.add('oculto');
+    //btnDesplegar.textContent = '➕ Añadir Producto';
+    btnDesplegar.classList.remove('activo');
+	actualizarContadorBoton();
 });
 
 // Función para enviar notificación usando el Service Worker
@@ -44,7 +84,7 @@ function enviarNotificacionLocal(nombre, fecha) {
         navigator.serviceWorker.ready.then(registration => {
             registration.showNotification('🎉 Producto Registrado', {
                 body: `Se ha guardado "${nombre}" con vencimiento el ${fecha}.`,
-                icon: 'https://cdn-icons-png.flaticon.com/512/1570/1570770.png',
+                icon: 'icono.svg',
                 tag: 'nuevo-producto',
                 vibrate: [200, 100, 200] // Arreglado: ahora tiene valores correctos
             });
@@ -73,21 +113,39 @@ function obtenerProductos() {
 function eliminarProducto(id) {
     const productos = obtenerProductos().filter(p => p.id !== id);
     localStorage.setItem('productos', JSON.stringify(productos));
-    render();
+    // Leer el filtro actual para mantener la búsqueda activa tras borrar
+    const inputBuscar = document.getElementById('buscar-producto');
+    const filtroActual = inputBuscar ? inputBuscar.value.toLowerCase() : '';
+    
+    render(filtroActual); // Renderiza manteniendo el filtro que ya estaba puesto
 }
 
-function render() {
+// Escuchar lo que escribe el usuario en tiempo real
+document.getElementById('buscar-producto').addEventListener('input', (e) => {
+    const textoBusqueda = e.target.value.toLowerCase();
+    render(textoBusqueda); // Volvemos a renderizar pasando el filtro
+});
+
+// Modifica la cabecera de tu función render para aceptar el filtro
+function render(filtro = '') {
     lista.innerHTML = '';
-    const productos = obtenerProductos();
+    let productos = obtenerProductos();
     const hoy = new Date();
 	hoy.setHours(0,0,0,0);
+	
+	// Filtrar si hay texto escrito
+    if (filtro) {
+        productos = productos.filter(p => p.nombre.toLowerCase().includes(filtro));
+    }
     
     // Ordenar por fecha más próxima
     productos.sort((a,b) => new Date(a.fecha) - new Date(b.fecha));
-
+	
+	const fragmento = document.createDocumentFragment(); // Contenedor temporal en memoria
+	
     productos.forEach(p => {
         const li = document.createElement('li');
-		
+
 		 // Formatear la fecha a dd/mm/aaaa
         const partesFecha = p.fecha.split('-'); // El input date da 'aaaa-mm-dd'
         const fechaFormateada = `${partesFecha[2]}/${partesFecha[1]}/${partesFecha[0]}`;
@@ -125,8 +183,11 @@ function render() {
 			<p>Vence: ${fechaFormateada} (<small>${textoDias}</small>)</p>
             <button class="btn-del" onclick="eliminarProducto(${p.id})">&times;</button>
         `;
-        lista.appendChild(li);
+	    fragmento.appendChild(li); // Se añade al fragmento en memoria, no al DOM real todavía
     });
+	lista.appendChild(fragmento);
+	
+	actualizarContadorBoton();
 }
 
 // ⏳ Función auxiliar para calcular años, meses y días legibles
@@ -233,7 +294,7 @@ function enviarAlertaVencimiento(titulo, mensaje, idProducto) {
         navigator.serviceWorker.ready.then(registration => {
             registration.showNotification(titulo, {
                 body: mensaje,
-                icon: 'https://cdn-icons-png.flaticon.com/512/1570/1570770.png',
+                icon: 'icono.svg',
                 tag: `vencimiento-${idProducto}` 
             });
         }).catch(() => {
@@ -246,6 +307,7 @@ function enviarAlertaVencimiento(titulo, mensaje, idProducto) {
 document.addEventListener('DOMContentLoaded', () => {
     render();
     solicitarPermisoNotificaciones();
+	actualizarContadorBoton();
     
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.ready.then(() => {
@@ -255,4 +317,3 @@ document.addEventListener('DOMContentLoaded', () => {
         ejecutarVerificacionUnica();
     }
 });
-
